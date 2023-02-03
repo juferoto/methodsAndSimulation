@@ -1,0 +1,153 @@
+---
+title: "Carrera de la luz 2022"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(devtools)
+devtools::install_github("dgonxalex80/paqueteMET")
+library(paqueteMET)
+library(ggplot2)
+
+Theme2 = theme(
+  axis.title.x = element_text(size = 8),
+  axis.text.x = element_text(size = 8),
+  axis.title.y = element_text(size = 8),
+  # axis.text.y = element_blank(),
+  axis.text = element_text( size = 8),
+  legend.title = element_text(size = 8),
+  legend.text = element_text(size = 8),  
+  strip.text = element_text(size=8),
+  title =element_text(size=8, face='bold')
+)# tamaño letra por grupos
+```
+## Column {data-width="100"}
+
+
+### velocidad  {.value-box}
+```{r}
+valueBox(value =paste(round(10070/min(CarreraLuz22$timerun),2),"m/s"), # ud1$cierre, 
+         caption = "Máxima velocidad", 
+         icon = "fa-clock")
+```
+
+
+### distancia  {.value-box}
+```{r}
+valueBox(value = paste(10.07,"Km"), #ud1$min, 
+         caption = "Distancia recorrida")
+```
+
+### Numero de participantes
+
+```{r}
+x=CarreraLuz22$id
+y=paste(length(x), "atletas")
+valueBox(y)
+```
+
+
+### Tiempo del perdedor
+
+```{r}
+x=CarreraLuz22$timerun/60
+y=paste(round(max(x), 2), "min")
+valueBox(y, icon = "fa-thumbs-down")
+```
+
+### Tiempo promedio de carrera
+
+```{r}
+x=CarreraLuz22$timerun/60
+y=paste(round(mean(x), 2), "min")
+valueBox(y, icon = "fa-shoe-prints")
+```
+
+### Porcentaje de hombres
+
+```{r}
+x=CarreraLuz22$sex=="Hombre"
+y=paste(round((sum(x)/length(CarreraLuz22$sex))*100, 2), "%")
+valueBox(y, icon = "fa-male")
+```
+
+### Porcentaje de mujeres
+
+```{r}
+x=CarreraLuz22$sex=="Mujer"
+y=paste(round((sum(x)/length(CarreraLuz22$sex))*100, 2), "%")
+valueBox(y, icon = "fa-female")
+```
+
+## Column {data-width="700" .tabset}
+
+
+### Tiempos de carrera
+
+```{r}
+paleta6=c("#447270", "#6B9493", "#F6E271", "#F6B916", "#F69312", "#BC6C25")
+p1=ggplot(CarreraLuz22, aes(y=timerun/60, x=categoria))+
+  geom_jitter(color="#034A94", size=1, alpha=0.9) +
+  aes(color=paleta6)+
+  labs(title = " ",
+       y= "tiempo - min",
+       x= "categorías")+ 
+  #facet_wrap(~ sex)
+  #facet_grid(vars(sex), scale="free")+
+  ylim(0,170)+
+  Theme2
+
+p1
+
+```
+
+### Cantidad de hombres y mujeres por categoria
+
+```{r}
+conteo <- table(CarreraLuz22$sex,CarreraLuz22$categoria)
+barplot(conteo,  
+xlab="Categorías",
+col=c("#3762AE","#FF33E6"),
+legend = rownames(conteo),
+las=1, ylim = c(0,1200), 
+names.arg=c("Juvenil","Abierta","Veteranos A","Veteranos B","Veteranos C"))
+```
+
+### Porcentaje de atletas por edad en la categoria abierta
+
+```{r}
+dataAbierta=subset(CarreraLuz22, (CarreraLuz22$edad & CarreraLuz22$categoria=="2. Abierta"))
+t1=table(dataAbierta$edad)
+pie(t1)
+```
+
+
+## Column {data-width="400"}
+
+### Tiempos de mujeres caleñas
+
+```{r}
+dataFc4=subset(CarreraLuz22, (CarreraLuz22$sex=="Mujer" & CarreraLuz22$origen=="Cali")) # dataset de mujeres
+x=dataFc4$timerun/60
+hist(x, xlim=c(30,120), las=1,
+     main=NULL,
+     xlab="tiempo (min)",
+     ylab = "frecuencia",
+     col ="#ee964b")
+```
+
+### Tiempos de hombres caleños
+
+```{r}
+dataFc4=subset(CarreraLuz22, (CarreraLuz22$sex=="Hombre" & CarreraLuz22$origen=="Cali")) # dataset de hombres
+x=dataFc4$timerun/60
+hist(x, xlim=c(20,130), las=1,
+     main=NULL,
+     xlab="tiempo (min)",
+     ylab = "frecuencia",
+     col ="#ee964b")
+```
